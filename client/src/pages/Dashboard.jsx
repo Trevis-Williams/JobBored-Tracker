@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/ui/Spinner';
 import CalendarModal from '../components/ui/CalendarModal';
+import StreakCard from '../components/dashboard/StreakCard';
 import DailySummary from '../components/dashboard/DailySummary';
 import MacroChart from '../components/dashboard/MacroChart';
 import MealSection from '../components/dashboard/MealSection';
@@ -32,8 +33,14 @@ export default function Dashboard() {
   const [date, setDate] = useState(params.get('date') || todayISO());
   const [loading, setLoading] = useState(true);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [streaks, setStreaks] = useState({ loggingStreak: 0, goalStreak: 0 });
 
   const isAdvanced = user?.accountMode === 'advanced';
+  const isToday = date === todayISO();
+
+  useEffect(() => {
+    api.get('/logs/streaks').then(({ data }) => setStreaks(data)).catch(() => {});
+  }, []);
 
   const fetchLogs = async (d) => {
     setLoading(true);
@@ -108,6 +115,10 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="animate-fade-in space-y-4">
+            {isToday && (
+              <StreakCard loggingStreak={streaks.loggingStreak} goalStreak={streaks.goalStreak} />
+            )}
+
             {isAdvanced ? (
               <>
                 <div className="animate-fade-in"><DailySummary totals={totals} goals={user?.dailyGoals || {}} /></div>

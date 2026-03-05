@@ -1,5 +1,6 @@
 import FoodLog from '../models/FoodLog.js';
 import Food from '../models/Food.js';
+import User from '../models/User.js';
 
 export async function createLog(req, res) {
   const { foodId, date, mealType, servings } = req.validated;
@@ -69,6 +70,54 @@ export async function getLogsByRange(req, res) {
   }).populate('foodId');
 
   res.json(logs);
+}
+
+export async function getStreaks(req, res) {
+  const user = await User.findById(req.userId);
+  const calorieGoal = user?.dailyGoals?.calories || 2000;
+
+  const now = new Date();
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const ninetyDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90);
+
+  const logs = await FoodLog.find({
+    userId: req.userId,
+    date: { $gte: ninetyDaysAgo, $lt: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
+  });
+
+  const dayMap = {};
+  for (const log of logs) {
+    const d = new Date(log.date);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (!dayMap[key]) dayMap[key] = 0;
+    dayMap[key] += log.nutrition?.calories || 0;
+  }
+
+  let loggingStreak = 0;
+  let goalStreak = 0;
+  let loggingBroken = false;
+  let goalBroken = false;
+
+  const cursor = new Date(yesterday);
+  for (let i = 0; i < 90; i++) {
+    const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
+    const dayCals = dayMap[key];
+
+    if (!loggingBroken) {
+      if (dayCals != null) loggingStreak++;
+      else loggingBroken = true;
+    }
+
+    if (!goalBroken) {
+      if (dayCals != null && dayCals >= calorieGoal * 0.9 && dayCals <= calorieGoal * 1.1) goalStreak++;
+      else goalBroken = true;
+    }
+
+    if (loggingBroken && goalBroken) break;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  res.json({ loggingStreak, goalStreak });
 }
 
 export async function deleteLog(req, res) {
