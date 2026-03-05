@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Toggle from '../components/ui/Toggle';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { canUseNotifications, getPermissionState, requestPermission } from '../hooks/useNotifications';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -33,6 +34,11 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [notifEnabled, setNotifEnabled] = useState(user?.notificationsEnabled || false);
+  const [notifTimes, setNotifTimes] = useState(user?.notificationTimes || []);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [newTime, setNewTime] = useState('12:00');
+  const [savingNotif, setSavingNotif] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
@@ -134,6 +140,130 @@ export default function Settings() {
             </div>
             <Toggle checked={isAdvanced} onChange={handleModeToggle} />
           </div>
+        </div>
+
+        <div className="card animate-fade-in stagger-3">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Reminders</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Get notified to log food</p>
+            </div>
+            {canUseNotifications() ? (
+              <Toggle
+                checked={notifEnabled}
+                onChange={async (checked) => {
+                  if (checked && getPermissionState() !== 'granted') {
+                    const perm = await requestPermission();
+                    if (perm !== 'granted') {
+                      toast.error('Notification permission denied');
+                      return;
+                    }
+                  }
+                  setNotifEnabled(checked);
+                  try {
+                    const { data } = await api.put('/auth/me', { notificationsEnabled: checked });
+                    updateUser(data);
+                  } catch {
+                    toast.error('Failed to update');
+                    setNotifEnabled(!checked);
+                  }
+                }}
+              />
+            ) : (
+              <span className="text-xs text-gray-400">Not supported</span>
+            )}
+          </div>
+
+          {notifEnabled && (
+            <div className="space-y-3 animate-fade-in">
+              {getPermissionState() === 'denied' && (
+                <p className="text-xs text-danger-500">Notifications are blocked. Enable them in your browser settings.</p>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                {notifTimes
+                  .slice()
+                  .sort()
+                  .map((time) => (
+                    <span key={time} className="inline-flex items-center gap-1 bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1.5 rounded-lg">
+                      {time}
+                      <button
+                        onClick={async () => {
+                          const updated = notifTimes.filter((t) => t !== time);
+                          setNotifTimes(updated);
+                          try {
+                            const { data } = await api.put('/auth/me', { notificationTimes: updated });
+                            updateUser(data);
+                          } catch {
+                            toast.error('Failed to update');
+                          }
+                        }}
+                        className="ml-0.5 text-primary-400 hover:text-primary-700"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </span>
+                  ))}
+
+                {!showTimePicker ? (
+                  <button
+                    onClick={() => setShowTimePicker(true)}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add time
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="time"
+                      className="input-field py-1.5 px-2 text-sm w-28"
+                      value={newTime}
+                      onChange={(e) => setNewTime(e.target.value)}
+                    />
+                    <button
+                      onClick={async () => {
+                        if (notifTimes.includes(newTime)) {
+                          toast.error('Time already added');
+                          return;
+                        }
+                        const updated = [...notifTimes, newTime];
+                        setNotifTimes(updated);
+                        setShowTimePicker(false);
+                        setSavingNotif(true);
+                        try {
+                          const { data } = await api.put('/auth/me', { notificationTimes: updated });
+                          updateUser(data);
+                        } catch {
+                          toast.error('Failed to save');
+                        } finally {
+                          setSavingNotif(false);
+                        }
+                      }}
+                      className="btn-primary text-sm py-1.5 px-3"
+                      disabled={savingNotif}
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => setShowTimePicker(false)}
+                      className="btn-ghost text-sm py-1.5 px-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {notifTimes.length === 0 && (
+                <p className="text-xs text-gray-400">No reminder times set. Tap "Add time" to get started.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {isAdvanced && (

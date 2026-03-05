@@ -32,6 +32,8 @@ export const updateMeSchema = z.object({
       fat: z.number().min(0).max(1000).optional(),
     })
     .optional(),
+  notificationsEnabled: z.boolean().optional(),
+  notificationTimes: z.array(z.string().regex(/^\d{2}:\d{2}$/, 'Time must be HH:MM')).max(10).optional(),
 }).strict();
 
 export const onboardingSchema = z.object({

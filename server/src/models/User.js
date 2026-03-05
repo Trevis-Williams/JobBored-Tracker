@@ -31,6 +31,8 @@ const userSchema = new mongoose.Schema(
       carbs: { type: Number, default: 250 },
       fat: { type: Number, default: 65 },
     },
+    notificationsEnabled: { type: Boolean, default: false },
+    notificationTimes: [{ type: String }],
     refreshToken: { type: String, default: null, index: true },
   },
   { timestamps: true }

@@ -33,6 +33,8 @@ function serializeUser(user) {
     accountMode: user.accountMode,
     onboardingComplete: user.onboardingComplete,
     dailyGoals: user.dailyGoals,
+    notificationsEnabled: user.notificationsEnabled,
+    notificationTimes: user.notificationTimes,
   };
 }
 
@@ -165,7 +167,7 @@ export async function updateMe(req, res) {
   const user = await User.findById(req.userId);
   if (!user) return res.status(404).json({ message: 'User not found' });
 
-  const { name, dailyGoals, accountMode, weight, height, age, gender, activityLevel, unitSystem } = req.validated;
+  const { name, dailyGoals, accountMode, weight, height, age, gender, activityLevel, unitSystem, notificationsEnabled, notificationTimes } = req.validated;
   if (name) user.name = name;
   if (accountMode) user.accountMode = accountMode;
   if (weight != null) user.weight = weight;
@@ -177,6 +179,8 @@ export async function updateMe(req, res) {
   if (dailyGoals) {
     user.dailyGoals = { ...user.dailyGoals.toObject(), ...dailyGoals };
   }
+  if (notificationsEnabled != null) user.notificationsEnabled = notificationsEnabled;
+  if (notificationTimes) user.notificationTimes = notificationTimes;
 
   await user.save();
   res.json(serializeUser(user));
