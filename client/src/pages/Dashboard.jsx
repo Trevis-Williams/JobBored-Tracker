@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/ui/Spinner';
 import CalendarModal from '../components/ui/CalendarModal';
 import StreakCard from '../components/dashboard/StreakCard';
+import WaterTracker from '../components/dashboard/WaterTracker';
 import DailySummary from '../components/dashboard/DailySummary';
 import MacroChart from '../components/dashboard/MacroChart';
 import MealSection from '../components/dashboard/MealSection';
@@ -137,6 +138,8 @@ export default function Dashboard() {
                 />
               </div>
             ))}
+
+            <WaterTracker date={date} />
           </div>
         )}
       </div>
