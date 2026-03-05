@@ -42,7 +42,6 @@ api.interceptors.response.use(
         return api(original);
       } catch {
         clearAccessToken();
-        window.location.href = '/login';
         return Promise.reject(error);
       }
     }
