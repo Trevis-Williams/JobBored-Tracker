@@ -49,18 +49,17 @@ app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === '/api/health' } }));
 
-const limiter = rateLimit({
+const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(limiter);
 
-app.use('/api/auth', authRoutes);
-app.use('/api/food', foodRoutes);
-app.use('/api/logs', logRoutes);
-app.use('/api/recipes', recipeRoutes);
+app.use('/api/auth', apiLimiter, authRoutes);
+app.use('/api/food', apiLimiter, foodRoutes);
+app.use('/api/logs', apiLimiter, logRoutes);
+app.use('/api/recipes', apiLimiter, recipeRoutes);
 
 app.get('/api/health', async (_req, res) => {
   const dbOk = mongoose.connection.readyState === 1;
