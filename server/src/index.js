@@ -14,6 +14,7 @@ import logger from './config/logger.js';
 import connectDB from './config/db.js';
 import errorHandler from './middleware/errorHandler.js';
 
+import { startPushScheduler } from './jobs/pushScheduler.js';
 import authRoutes from './routes/auth.js';
 import foodRoutes from './routes/food.js';
 import logRoutes from './routes/log.js';
@@ -85,6 +86,7 @@ app.use(errorHandler);
 connectDB().then(() => {
   const server = app.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}`);
+    startPushScheduler();
   });
 
   const shutdown = () => {

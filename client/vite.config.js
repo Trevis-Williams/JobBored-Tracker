@@ -37,6 +37,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        importScripts: ['/sw-push.js'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/world\.openfoodfacts\.org\/.*/i,

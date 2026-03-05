@@ -12,6 +12,8 @@ import {
   updateMe,
   completeOnboarding,
   recalculateGoals,
+  getVapidKey,
+  pushSubscribe,
 } from '../controllers/authController.js';
 
 const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, message: { message: 'Too many attempts, try again later' } });
@@ -26,5 +28,7 @@ router.get('/me', protect, getMe);
 router.put('/me', protect, validate(updateMeSchema), updateMe);
 router.put('/onboarding', protect, validate(onboardingSchema), completeOnboarding);
 router.post('/recalculate-goals', protect, recalculateGoals);
+router.get('/vapid-key', getVapidKey);
+router.post('/push-subscribe', protect, pushSubscribe);
 
 export default router;

@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema(
     },
     notificationsEnabled: { type: Boolean, default: false },
     notificationTimes: [{ type: String }],
+    pushSubscription: { type: Object, default: null },
     refreshToken: { type: String, default: null, index: true },
   },
   { timestamps: true }

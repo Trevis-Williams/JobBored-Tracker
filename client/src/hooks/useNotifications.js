@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import api from '../api/axios';
 
 function getMealMessage(hour) {
   if (hour < 10) return 'Time to log your breakfast!';
@@ -21,14 +22,49 @@ export async function requestPermission() {
   return Notification.requestPermission();
 }
 
-function showNotification(time) {
+export async function subscribeToPush() {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+
+    const { data } = await api.get('/auth/vapid-key');
+    if (!data.publicKey) return null;
+
+    const registration = await navigator.serviceWorker.ready;
+
+    const existing = await registration.pushManager.getSubscription();
+    if (existing) {
+      await api.post('/auth/push-subscribe', { subscription: existing.toJSON() });
+      return existing;
+    }
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(data.publicKey),
+    });
+
+    await api.post('/auth/push-subscribe', { subscription: subscription.toJSON() });
+    return subscription;
+  } catch {
+    return null;
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+function showLocalNotification(time) {
   if (getPermissionState() !== 'granted') return;
-
   const [h] = time.split(':').map(Number);
-  const message = getMealMessage(h);
-
   new Notification('NutriScan', {
-    body: message,
+    body: getMealMessage(h),
     icon: '/icons/icon-192.png',
     tag: `nutriscan-${time}`,
   });
@@ -54,7 +90,7 @@ export default function useNotifications(user) {
 
       const ms = target.getTime() - now.getTime();
       if (ms > 0) {
-        const id = setTimeout(() => showNotification(time), ms);
+        const id = setTimeout(() => showLocalNotification(time), ms);
         timersRef.current.push(id);
       }
     }

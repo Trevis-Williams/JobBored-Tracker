@@ -10,7 +10,6 @@ import DailySummary from '../components/dashboard/DailySummary';
 import MacroChart from '../components/dashboard/MacroChart';
 import MealSection from '../components/dashboard/MealSection';
 import useAnimatedNumber from '../hooks/useAnimatedNumber';
-import useNotifications from '../hooks/useNotifications';
 import { totalNutrition, groupByMeal, todayISO, formatDate } from '../utils/nutrition';
 import toast from 'react-hot-toast';
 
@@ -30,7 +29,6 @@ function SimpleSummary({ totals }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  useNotifications(user);
   const [params] = useSearchParams();
   const [logs, setLogs] = useState([]);
   const [date, setDate] = useState(params.get('date') || todayISO());

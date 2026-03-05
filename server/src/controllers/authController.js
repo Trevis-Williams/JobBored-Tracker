@@ -232,3 +232,16 @@ export async function recalculateGoals(req, res) {
   res.json(serializeUser(user));
 }
 
+export function getVapidKey(_req, res) {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || '' });
+}
+
+export async function pushSubscribe(req, res) {
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  user.pushSubscription = req.body.subscription;
+  await user.save();
+
+  res.json({ message: 'Push subscription saved' });
+}

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { FullPageSpinner } from './components/ui/Spinner';
+import useNotifications from './hooks/useNotifications';
 import BottomNav from './components/layout/BottomNav';
 
 const Login = lazy(() => import('./pages/Login'));
@@ -44,6 +45,7 @@ function GuestRoute({ children }) {
 
 export default function App() {
   const { user } = useAuth();
+  useNotifications(user);
   const showNav = user && user.onboardingComplete;
 
   return (

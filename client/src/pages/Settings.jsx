@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Toggle from '../components/ui/Toggle';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { canUseNotifications, getPermissionState, requestPermission } from '../hooks/useNotifications';
+import { canUseNotifications, getPermissionState, requestPermission, subscribeToPush } from '../hooks/useNotifications';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -159,6 +159,9 @@ export default function Settings() {
                       return;
                     }
                   }
+                  if (checked) {
+                    await subscribeToPush();
+                  }
                   setNotifEnabled(checked);
                   try {
                     const { data } = await api.put('/auth/me', { notificationsEnabled: checked });
@@ -262,6 +265,12 @@ export default function Settings() {
               {notifTimes.length === 0 && (
                 <p className="text-xs text-gray-400">No reminder times set. Tap "Add time" to get started.</p>
               )}
+
+              <div className="bg-blue-50 rounded-xl p-3 mt-2">
+                <p className="text-xs text-blue-700">
+                  <span className="font-semibold">iPhone tip:</span> Add NutriScan to your home screen (Share &gt; Add to Home Screen) to receive notifications even when the app is closed.
+                </p>
+              </div>
             </div>
           )}
         </div>
