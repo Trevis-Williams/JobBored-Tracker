@@ -37,7 +37,13 @@ export default function Settings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { data } = await api.put('/auth/me', { dailyGoals: goals });
+      const safeGoals = {
+        calories: goals.calories || 2000,
+        protein: goals.protein || 50,
+        carbs: goals.carbs || 250,
+        fat: goals.fat || 65,
+      };
+      const { data } = await api.put('/auth/me', { dailyGoals: safeGoals });
       updateUser(data);
       toast.success('Goals updated!');
     } catch {
@@ -73,7 +79,7 @@ export default function Settings() {
   };
 
   const handleChange = (field, value) => {
-    setGoals((prev) => ({ ...prev, [field]: parseInt(value) || 0 }));
+    setGoals((prev) => ({ ...prev, [field]: value === '' ? '' : (parseInt(value) ?? '') }));
   };
 
   const displayWeight = user?.weight

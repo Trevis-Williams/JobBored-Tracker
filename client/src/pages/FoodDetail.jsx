@@ -32,7 +32,7 @@ export default function FoodDetail() {
         foodId: id,
         date: todayISO(),
         mealType,
-        servings,
+        servings: servings || 1,
       });
       toast.success(`${food.name} logged!`);
       navigate('/');
@@ -103,7 +103,7 @@ export default function FoodDetail() {
           nutrition={nutrition}
           servingSize={food.servingSize}
           servingUnit={food.servingUnit}
-          servings={servings}
+          servings={servings || 1}
         />
 
         {food.ingredients && (
@@ -124,7 +124,10 @@ export default function FoodDetail() {
               step="0.25"
               className="input-field"
               value={servings}
-              onChange={(e) => setServings(parseFloat(e.target.value) || 1)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setServings(val === '' ? '' : (parseFloat(val) || ''));
+              }}
             />
           </div>
 

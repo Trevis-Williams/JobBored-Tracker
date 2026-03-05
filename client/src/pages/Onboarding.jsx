@@ -52,9 +52,13 @@ function BodyStatsStep({ data, onChange }) {
   };
 
   const setHeightFtIn = (newFt, newIn) => {
-    const f = parseInt(newFt) || 0;
-    const i = parseInt(newIn) || 0;
-    onChange({ heightCm: ftInToCm(f, i) });
+    const f = newFt === '' ? 0 : parseInt(newFt) || 0;
+    const i = newIn === '' ? 0 : parseInt(newIn) || 0;
+    if (newFt === '' && newIn === '') {
+      onChange({ heightCm: null });
+    } else {
+      onChange({ heightCm: ftInToCm(f, i) });
+    }
   };
 
   const setHeightCm = (val) => {
@@ -309,7 +313,7 @@ function GoalSetupStep({ goalMethod, setGoalMethod, goals, setGoals, calculatedG
 
 function GoalInputs({ goals, onChange }) {
   const update = (field, value) => {
-    onChange({ ...goals, [field]: parseInt(value) || 0 });
+    onChange({ ...goals, [field]: value === '' ? '' : (parseInt(value) ?? '') });
   };
 
   return (
