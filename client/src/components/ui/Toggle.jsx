@@ -12,8 +12,8 @@ export default function Toggle({ checked, onChange, label }) {
         }`}
       >
         <span
-          className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-transform duration-200 ${
-            checked ? 'translate-x-[22px]' : 'translate-x-0.5'
+          className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${
+            checked ? 'left-[26px]' : 'left-[3px]'
           }`}
         />
       </div>
