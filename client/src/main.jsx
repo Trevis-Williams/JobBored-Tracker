@@ -18,13 +18,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <AuthProvider>
           <App />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 3000,
-            style: { borderRadius: '12px', padding: '12px 16px' },
-          }}
-        />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 3000,
+              style: { borderRadius: '12px', padding: '12px 16px' },
+            }}
+          />
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

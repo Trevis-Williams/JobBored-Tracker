@@ -10,6 +10,18 @@ export default function validate(schema) {
   };
 }
 
+export function validateParams(schema) {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.params);
+    if (!result.success) {
+      const message = result.error.issues.map((i) => i.message).join(', ');
+      return res.status(400).json({ message });
+    }
+    req.validatedParams = result.data;
+    next();
+  };
+}
+
 export function validateQuery(schema) {
   return (req, res, next) => {
     const result = schema.safeParse(req.query);

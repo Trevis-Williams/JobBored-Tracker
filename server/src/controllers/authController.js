@@ -65,11 +65,8 @@ function calculateGoals(weightKg, heightCm, age, gender, activityLevel) {
 }
 
 export async function register(req, res) {
-  const { email, password, name } = req.body;
-
-  if (!email || !password || !name) {
-    return res.status(400).json({ message: 'All fields are required' });
-  }
+  const { password, name } = req.validated;
+  const email = req.validated.email.toLowerCase();
 
   const exists = await User.findOne({ email });
   if (exists) {
@@ -96,12 +93,8 @@ export async function register(req, res) {
 }
 
 export async function login(req, res) {
-  const email = req.body.email?.toLowerCase?.() || '';
-  const { password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
-  }
+  const email = req.validated.email.toLowerCase();
+  const { password } = req.validated;
 
   const user = await User.findOne({ email });
   if (!user || !(await user.matchPassword(password))) {
@@ -172,7 +165,7 @@ export async function updateMe(req, res) {
   const user = await User.findById(req.userId);
   if (!user) return res.status(404).json({ message: 'User not found' });
 
-  const { name, dailyGoals, accountMode, weight, height, age, gender, activityLevel, unitSystem } = req.body;
+  const { name, dailyGoals, accountMode, weight, height, age, gender, activityLevel, unitSystem } = req.validated;
   if (name) user.name = name;
   if (accountMode) user.accountMode = accountMode;
   if (weight != null) user.weight = weight;
@@ -196,11 +189,7 @@ export async function completeOnboarding(req, res) {
   const {
     weight, height, age, gender, activityLevel, unitSystem,
     accountMode, dailyGoals, autoCalculate,
-  } = req.body;
-
-  if (!weight || !height || !age || !gender || !activityLevel) {
-    return res.status(400).json({ message: 'Body stats are required' });
-  }
+  } = req.validated;
 
   user.weight = weight;
   user.height = height;

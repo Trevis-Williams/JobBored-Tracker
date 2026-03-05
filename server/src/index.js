@@ -23,7 +23,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(helmet());
+app.set('trust proxy', 1);
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'https://world.openfoodfacts.org'],
+        fontSrc: ["'self'", 'data:'],
+      },
+    },
+  })
+);
 app.use(
   cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
@@ -55,6 +70,10 @@ app.get('/api/health', async (_req, res) => {
   });
 });
 
+app.all('/api/*', (_req, res) => {
+  res.status(404).json({ message: 'Not found' });
+});
+
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../public')));
   app.get('*', (_req, res) => {
@@ -71,9 +90,16 @@ connectDB().then(() => {
 
   const shutdown = () => {
     logger.info('Shutting down gracefully...');
+    const forceExit = setTimeout(() => {
+      logger.error('Forced shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+    forceExit.unref();
+
     server.close(() => {
       mongoose.connection.close().then(() => {
         logger.info('Closed all connections');
+        clearTimeout(forceExit);
         process.exit(0);
       });
     });
@@ -81,4 +107,13 @@ connectDB().then(() => {
 
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
+
+  process.on('unhandledRejection', (err) => {
+    logger.error({ err }, 'Unhandled rejection');
+  });
+
+  process.on('uncaughtException', (err) => {
+    logger.fatal({ err }, 'Uncaught exception');
+    shutdown();
+  });
 });

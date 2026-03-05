@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
-import { totalNutrition } from '../../utils/nutrition';
+import { totalNutrition, todayISO } from '../../utils/nutrition';
 
 const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTH_NAMES = [
@@ -10,10 +10,6 @@ const MONTH_NAMES = [
 
 function toISO(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-}
-
-function todayStr() {
-  return new Date().toISOString().split('T')[0];
 }
 
 function getDaysInMonth(year, month) {
@@ -66,7 +62,8 @@ export default function CalendarModal({ open, selectedDate, onSelect, onClose, d
       const { data: logs } = await api.get('/logs/range', { params: { start, end } });
       const grouped = {};
       for (const log of logs) {
-        const dateKey = new Date(log.date).toISOString().split('T')[0];
+        const d = new Date(log.date);
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         if (!grouped[dateKey]) grouped[dateKey] = [];
         grouped[dateKey].push(log);
       }
@@ -95,7 +92,7 @@ export default function CalendarModal({ open, selectedDate, onSelect, onClose, d
 
   if (!open) return null;
 
-  const today = todayStr();
+  const today = todayISO();
   const key = `${viewYear}-${viewMonth}`;
   const dayCals = monthData[key] || {};
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);

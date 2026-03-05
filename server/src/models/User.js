@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
       carbs: { type: Number, default: 250 },
       fat: { type: Number, default: 65 },
     },
-    refreshToken: { type: String, default: null },
+    refreshToken: { type: String, default: null, index: true },
   },
   { timestamps: true }
 );

@@ -256,7 +256,7 @@ function ModeStep({ mode, onChange }) {
   );
 }
 
-function GoalSetupStep({ goalMethod, setGoalMethod, goals, setGoals, calculatedGoals }) {
+function GoalSetupStep({ goalMethod, setGoalMethod, goals, setGoals, calculatedGoals, setCalculatedGoals }) {
   return (
     <div className="space-y-5">
       <div className="text-center mb-6">
@@ -294,7 +294,7 @@ function GoalSetupStep({ goalMethod, setGoalMethod, goals, setGoals, calculatedG
           <p className="text-sm text-primary-700 font-medium mb-3">
             Based on your body stats, here are your recommended daily goals. Feel free to adjust them.
           </p>
-          <GoalInputs goals={calculatedGoals} onChange={setGoals} />
+          <GoalInputs goals={calculatedGoals} onChange={setCalculatedGoals} />
         </div>
       )}
 
@@ -455,6 +455,7 @@ export default function Onboarding() {
             goals={manualGoals}
             setGoals={setManualGoals}
             calculatedGoals={autoGoals}
+            setCalculatedGoals={setAutoGoals}
           />
         )}
 

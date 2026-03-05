@@ -2,7 +2,7 @@ import FoodLog from '../models/FoodLog.js';
 import Food from '../models/Food.js';
 
 export async function createLog(req, res) {
-  const { foodId, date, mealType, servings } = req.body;
+  const { foodId, date, mealType, servings } = req.validated;
 
   const food = await Food.findById(foodId);
   if (!food) return res.status(404).json({ message: 'Food not found' });

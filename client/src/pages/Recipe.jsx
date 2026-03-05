@@ -27,13 +27,16 @@ export default function Recipe() {
               + New Recipe
             </button>
           ) : (
-            <button onClick={() => setView('list')} className="btn-ghost text-sm py-2 px-3">
+            <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm font-semibold text-primary-600 bg-primary-50 hover:bg-primary-100 active:scale-[0.97] py-2 px-4 rounded-xl transition-all">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
               My Recipes
             </button>
           )}
         </div>
 
-        {view === 'list' ? <SavedRecipesList /> : <RecipeCalculator onSaved={() => setView('list')} />}
+        {view === 'list' ? <SavedRecipesList /> : <RecipeCalculator onSaved={() => setView('list')} onBack={() => setView('list')} />}
       </div>
     </div>
   );
@@ -78,7 +81,6 @@ function SavedRecipesList() {
         servingUnit: 'serving',
         nutritionPer100g: recipe.perServing,
         nutritionPerServing: recipe.perServing,
-        source: 'manual',
       });
 
       await api.post('/logs', {
@@ -212,7 +214,7 @@ function SavedRecipesList() {
   );
 }
 
-function RecipeCalculator({ onSaved }) {
+function RecipeCalculator({ onSaved, onBack }) {
   const navigate = useNavigate();
   const [recipeText, setRecipeText] = useState('');
   const [servings, setServings] = useState(4);
@@ -259,7 +261,8 @@ function RecipeCalculator({ onSaved }) {
       });
 
       const totalNutrition = sumNutrition(rows.map((r) => r.nutrition));
-      const perServing = divideNutrition(totalNutrition, servings);
+      const effectiveServings = servings || 1;
+      const perServing = divideNutrition(totalNutrition, effectiveServings);
 
       setResults({ rows, totalNutrition, perServing });
     } catch {
@@ -282,7 +285,7 @@ function RecipeCalculator({ onSaved }) {
       await api.post('/recipes', {
         name,
         ingredientsText: recipeText,
-        servings,
+        servings: servings || 1,
         totalNutrition: results.totalNutrition,
         perServing: results.perServing,
       });
@@ -303,12 +306,11 @@ function RecipeCalculator({ onSaved }) {
       const name = recipeName.trim() || 'Custom Recipe';
       const { data: food } = await api.post('/food', {
         name,
-        brand: `${servings} servings`,
+        brand: `${servings || 1} servings`,
         servingSize: 1,
         servingUnit: 'serving',
         nutritionPer100g: results.perServing,
         nutritionPerServing: results.perServing,
-        source: 'manual',
       });
 
       await api.post('/logs', {
@@ -357,7 +359,10 @@ function RecipeCalculator({ onSaved }) {
             min="1"
             className="input-field"
             value={servings}
-            onChange={(e) => setServings(parseInt(e.target.value) || 1)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setServings(val === '' ? '' : parseInt(val) || '');
+            }}
           />
         </div>
 
@@ -383,7 +388,7 @@ function RecipeCalculator({ onSaved }) {
     <>
       <div className="card animate-fade-in text-center py-5">
         <p className="text-sm text-gray-500 mb-1">
-          Per Serving (1 of {servings})
+          Per Serving (1 of {servings || 1})
         </p>
         <p className="text-3xl font-extrabold text-primary-600">
           {displayCal} cal

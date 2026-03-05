@@ -1,11 +1,7 @@
 import SavedRecipe from '../models/SavedRecipe.js';
 
 export async function createRecipe(req, res) {
-  const { name, ingredientsText, servings, totalNutrition, perServing } = req.body;
-
-  if (!name) {
-    return res.status(400).json({ message: 'Recipe name is required' });
-  }
+  const { name, ingredientsText, servings, totalNutrition, perServing } = req.validated;
 
   const recipe = await SavedRecipe.create({
     userId: req.userId,

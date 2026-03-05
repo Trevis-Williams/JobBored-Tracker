@@ -28,3 +28,11 @@ export const batchSearchSchema = z.object({
     .min(1, 'At least one ingredient required')
     .max(50, 'Maximum 50 ingredients'),
 });
+
+export const barcodeParamSchema = z.object({
+  code: z.string().min(1).max(20).regex(/^[a-zA-Z0-9]+$/, 'Invalid barcode format'),
+});
+
+export const searchQuerySchema = z.object({
+  q: z.string().min(1, 'Query is required').max(200),
+});

@@ -85,10 +85,7 @@ async function findBestMatch(query) {
 }
 
 export async function batchSearch(req, res) {
-  const { ingredients } = req.body;
-  if (!ingredients || !Array.isArray(ingredients)) {
-    return res.status(400).json({ message: 'ingredients array is required' });
-  }
+  const { ingredients } = req.validated;
 
   const results = await Promise.all(
     ingredients.map(async (query) => {
