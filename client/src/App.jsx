@@ -13,6 +13,7 @@ const Scanner = lazy(() => import('./pages/Scanner'));
 const FoodDetail = lazy(() => import('./pages/FoodDetail'));
 const Search = lazy(() => import('./pages/Search'));
 const Recipe = lazy(() => import('./pages/Recipe'));
+const Exercise = lazy(() => import('./pages/Exercise'));
 const Settings = lazy(() => import('./pages/Settings'));
 
 function ProtectedRoute({ children }) {
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/food/:id" element={<ProtectedRoute><FoodDetail /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
           <Route path="/recipe" element={<ProtectedRoute><Recipe /></ProtectedRoute>} />
+          <Route path="/exercise" element={<ProtectedRoute><Exercise /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

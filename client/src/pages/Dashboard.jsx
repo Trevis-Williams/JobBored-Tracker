@@ -15,14 +15,28 @@ import toast from 'react-hot-toast';
 
 const MEAL_STAGGER = { breakfast: 'stagger-1', lunch: 'stagger-2', dinner: 'stagger-3', snack: 'stagger-4' };
 
-function SimpleSummary({ totals }) {
+function SimpleSummary({ totals, burned }) {
   const displayCal = useAnimatedNumber(totals.calories);
+  const displayBurned = useAnimatedNumber(burned);
+  const net = totals.calories - burned;
+  const displayNet = useAnimatedNumber(net);
 
   return (
-    <div className="card animate-fade-in text-center py-6">
-      <p className="text-sm text-gray-500 mb-1">Calories Today</p>
-      <p className="text-3xl font-extrabold text-primary-600">{displayCal}</p>
-      <p className="text-xs text-gray-500 mt-1">kcal consumed</p>
+    <div className="card animate-fade-in text-center py-5">
+      <p className="text-sm text-gray-500 mb-1">Net Calories</p>
+      <p className="text-3xl font-extrabold text-primary-600">{displayNet}</p>
+      <div className="flex justify-center gap-4 mt-2 text-xs text-gray-500">
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-primary-400" />
+          {displayCal} eaten
+        </span>
+        {burned > 0 && (
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-orange-400" />
+            {displayBurned} burned
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -31,6 +45,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [params] = useSearchParams();
   const [logs, setLogs] = useState([]);
+  const [exerciseLogs, setExerciseLogs] = useState([]);
   const [date, setDate] = useState(params.get('date') || todayISO());
   const [loading, setLoading] = useState(true);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -43,20 +58,24 @@ export default function Dashboard() {
     api.get('/logs/streaks').then(({ data }) => setStreaks(data)).catch(() => {});
   }, []);
 
-  const fetchLogs = async (d) => {
+  const fetchData = async (d) => {
     setLoading(true);
     try {
-      const { data } = await api.get('/logs', { params: { date: d } });
-      setLogs(data);
+      const [foodRes, exerciseRes] = await Promise.all([
+        api.get('/logs', { params: { date: d } }),
+        api.get('/exercises', { params: { date: d } }),
+      ]);
+      setLogs(foodRes.data);
+      setExerciseLogs(exerciseRes.data);
     } catch {
-      toast.error('Failed to load logs');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLogs(date);
+    fetchData(date);
   }, [date]);
 
   const handleDelete = async (id) => {
@@ -78,6 +97,7 @@ export default function Dashboard() {
 
   const totals = totalNutrition(logs);
   const groups = groupByMeal(logs);
+  const totalBurned = exerciseLogs.reduce((sum, log) => sum + (log.totalCaloriesBurned || 0), 0);
 
   return (
     <div>
@@ -122,11 +142,11 @@ export default function Dashboard() {
 
             {isAdvanced ? (
               <>
-                <div className="animate-fade-in"><DailySummary totals={totals} goals={user?.dailyGoals || {}} /></div>
+                <div className="animate-fade-in"><DailySummary totals={totals} goals={user?.dailyGoals || {}} burned={totalBurned} /></div>
                 <div className="animate-fade-in stagger-1"><MacroChart totals={totals} /></div>
               </>
             ) : (
-              <SimpleSummary totals={totals} />
+              <SimpleSummary totals={totals} burned={totalBurned} />
             )}
 
             {['breakfast', 'lunch', 'dinner', 'snack'].map((meal) => (

@@ -19,6 +19,7 @@ import authRoutes from './routes/auth.js';
 import foodRoutes from './routes/food.js';
 import logRoutes from './routes/log.js';
 import recipeRoutes from './routes/recipe.js';
+import exerciseRoutes from './routes/exercise.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -61,6 +62,7 @@ app.use('/api/auth', apiLimiter, authRoutes);
 app.use('/api/food', apiLimiter, foodRoutes);
 app.use('/api/logs', apiLimiter, logRoutes);
 app.use('/api/recipes', apiLimiter, recipeRoutes);
+app.use('/api/exercises', apiLimiter, exerciseRoutes);
 
 app.get('/api/health', async (_req, res) => {
   const dbOk = mongoose.connection.readyState === 1;
